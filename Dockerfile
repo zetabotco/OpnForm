@@ -30,15 +30,15 @@ WORKDIR /app
 RUN chown www-data:www-data /app
 COPY --chown=www-data:www-data . .
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
-USER www-data
+USER root
 RUN composer install
 
-RUN mkdir -p storage/framework/sessions
-RUN mkdir -p storage/framework/views
-RUN mkdir -p storage/framework/cache
+# RUN mkdir -p storage/framework/sessions
+# RUN mkdir -p storage/framework/views
+# RUN mkdir -p storage/framework/cache
 
-RUN chmod -R 775 storage/framework
-RUN chown -R www-data:www-data storage/framework
+# RUN chmod -R 775 storage/framework
+# RUN chown -R www-data:www-data storage/framework
 
 FROM node:14-alpine as frontend
 WORKDIR /app
@@ -61,7 +61,7 @@ COPY ./docker/supervisord.conf /etc/supervisord.conf
 RUN chown -R www-data:www-data /run/nginx /var/lib/nginx /var/log/nginx && \
     sed -i '/user nginx;/d' /etc/nginx/nginx.conf
 # Switch to www-user
-USER www-data
+USER root
 
 EXPOSE 8000
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

@@ -7,7 +7,8 @@ RUN apk add --no-cache \
     ca-certificates \
     libxml2-dev \
     oniguruma-dev \
-    vim
+    vim \
+    libtool automake autoconf nasm build-base zlib zlib-dev libpng-dev libc6-compat g++ make gcompat libstdc++
 # Install php extensions
 RUN install-php-extensions \
     bcmath \
@@ -21,8 +22,9 @@ RUN install-php-extensions \
     pcntl \
     redis-stable \
     gd \
-    zip
-
+    zip \
+    exif
+    
 # Install the composer packages using www-data user
 WORKDIR /app
 RUN chown www-data:www-data /app
@@ -41,9 +43,9 @@ RUN chown -R www-data:www-data storage/framework
 FROM node:14-alpine as frontend
 WORKDIR /app
 COPY . .
-RUN apk add --no-progress --quiet --no-cache git \
-    && npm install \
-    && npm run prod
+RUN apk add --no-progress --quiet --no-cache git libtool automake autoconf nasm build-base zlib zlib-dev libpng-dev libc6-compat g++ make gcompat libstdc++
+RUN npm install
+RUN npm run build
 
 FROM base as app
 COPY --from=frontend --chown=www-data:www-data /app/public /app/public
@@ -51,7 +53,7 @@ RUN php artisan view:cache
 
 # Setup nginx & supervisor as root user
 USER root
-RUN apk add --no-progress --quiet --no-cache nginx supervisor
+RUN apk add --no-progress --quiet --no-cache nginx supervisor libtool automake autoconf nasm build-base zlib zlib-dev libpng-dev libc6-compat g++ make gcompat libstdc++
 COPY ./docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY ./docker/supervisord.conf /etc/supervisord.conf
 
